@@ -58,6 +58,9 @@ Important behavior:
 - `cuecast`: repo-root launcher script
 - `README.md`: user-facing overview
 - `LICENSE`: MIT license for public distribution
+- `SECURITY.md`: vulnerability reporting policy
+- `.github/workflows/ci.yml`: GitHub Actions build check
+- `.github/dependabot.yml`: dependency and Actions update policy
 
 Core runtime:
 
@@ -114,6 +117,8 @@ Manifest entries currently include:
 - `--quiet` disables live dashboard/log noise.
 - The dashboard uses ANSI styling and is intended for 256-color / truecolor terminals like Ghostty.
 - The terminal UI hides the cursor while active and restores it on clean shutdown.
+- GitHub repo automation now includes CI, Dependabot, vulnerability alerts, and automated security fixes.
+- Direct push protection on `main` is not currently enforceable on this private repo because GitHub branch protection is unavailable on the current plan.
 
 ## Common Commands
 

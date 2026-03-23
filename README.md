@@ -129,3 +129,11 @@ You can also backfill tags later:
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+## Development
+
+GitHub automation for this repository includes:
+
+- CI on pushes and pull requests
+- weekly Dependabot checks for Swift dependencies and GitHub Actions
+- security policy documentation in [SECURITY.md](SECURITY.md)
