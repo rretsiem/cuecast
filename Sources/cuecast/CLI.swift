@@ -130,6 +130,7 @@ enum CLI {
         guard let sourceURL = URL(string: urlString), sourceURL.scheme != nil else {
             throw CLIError.invalidURL(urlString)
         }
+        _ = try SecurityPolicy.validatedRemoteURL(sourceURL)
 
         return .record(
             RecordOptions(

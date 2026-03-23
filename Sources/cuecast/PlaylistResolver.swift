@@ -4,7 +4,7 @@ enum PlaylistResolver {
     private static let playlistExtensions = Set(["pls", "m3u", "m3u8", "asx"])
 
     static func resolve(url: URL, session: URLSession, logger: Logger) async throws -> URL {
-        var current = url
+        var current = try SecurityPolicy.validatedRemoteURL(url)
 
         for _ in 0..<4 {
             let fileExtension = current.pathExtension.lowercased()
@@ -25,6 +25,13 @@ enum PlaylistResolver {
                 throw StreamRecorderError.httpStatus(httpResponse.statusCode)
             }
 
+            try SecurityPolicy.validateResponseSize(
+                kind: "playlist",
+                data: data,
+                url: current,
+                limitBytes: SecurityPolicy.maxPlaylistBytes
+            )
+
             let body = String(data: data, encoding: .utf8)
                 ?? String(data: data, encoding: .isoLatin1)
                 ?? ""
@@ -33,7 +40,7 @@ enum PlaylistResolver {
                 throw StreamRecorderError.playlistResolutionFailed(current.absoluteString)
             }
 
-            current = next
+            current = try SecurityPolicy.validatedRemoteURL(next)
         }
 
         return current

@@ -14,18 +14,23 @@ enum ArtworkResolver {
         do {
             let describeURL = URL(string: "https://opml.radiotime.com/Describe.ashx?id=\(stationID)")!
             let (describeData, _) = try await session.data(from: describeURL)
+            try SecurityPolicy.validateResponseSize(
+                kind: "artwork description",
+                data: describeData,
+                url: describeURL,
+                limitBytes: SecurityPolicy.maxArtworkDescriptionBytes
+            )
             guard
                 let xml = String(data: describeData, encoding: .utf8),
                 let logoURLString = firstCapture(in: xml, pattern: #"<logo>([^<]+)</logo>"#),
-                let logoURL = URL(string: logoURLString)
+                let candidateURL = URL(string: logoURLString)
             else {
                 return nil
             }
+            let logoURL = try SecurityPolicy.validatedRemoteURL(candidateURL)
 
             let (imageData, imageResponse) = try await session.data(from: logoURL)
-            guard !imageData.isEmpty else {
-                return nil
-            }
+            try SecurityPolicy.validateArtwork(data: imageData, response: imageResponse, url: logoURL)
 
             let mimeType = (imageResponse as? HTTPURLResponse)?
                 .value(forHTTPHeaderField: "Content-Type")?

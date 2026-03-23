@@ -46,12 +46,15 @@ struct StreamMetadata {
         let trimmed = raw.replacingOccurrences(of: "\0", with: "")
         var fields: [String: String] = [:]
 
-        for part in trimmed.split(separator: ";") {
+        for part in trimmed.split(separator: ";").prefix(SecurityPolicy.maxMetadataFields) {
             guard let separator = part.firstIndex(of: "=") else {
                 continue
             }
 
-            let key = String(part[..<separator]).trimmingCharacters(in: .whitespacesAndNewlines)
+            let key = InputSanitizer.text(
+                String(part[..<separator]).trimmingCharacters(in: .whitespacesAndNewlines),
+                maxLength: SecurityPolicy.maxMetadataKeyLength
+            )
             var value = String(part[part.index(after: separator)...])
                 .trimmingCharacters(in: .whitespacesAndNewlines)
 
@@ -60,7 +63,16 @@ struct StreamMetadata {
                 value.removeLast()
             }
 
-            fields[key] = value
+            let sanitizedValue = InputSanitizer.text(
+                value,
+                maxLength: SecurityPolicy.maxMetadataValueLength
+            )
+
+            guard !key.isEmpty, !sanitizedValue.isEmpty else {
+                continue
+            }
+
+            fields[key] = sanitizedValue
         }
 
         return StreamMetadata(fields: fields)
