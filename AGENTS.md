@@ -59,8 +59,12 @@ Important behavior:
 - `README.md`: user-facing overview
 - `LICENSE`: MIT license for public distribution
 - `SECURITY.md`: vulnerability reporting policy
+- `CONTRIBUTING.md`: contributor workflow and guardrails
+- `CONTRIBUTORS.md`: maintainer/contributor listing
 - `.github/workflows/ci.yml`: GitHub Actions build check
 - `.github/dependabot.yml`: dependency and Actions update policy
+- `.github/pull_request_template.md`: PR checklist and change framing
+- `.github/ISSUE_TEMPLATE/*`: public issue intake templates
 
 Core runtime:
 
@@ -119,6 +123,8 @@ Manifest entries currently include:
 - The terminal UI hides the cursor while active and restores it on clean shutdown.
 - GitHub repo automation now includes CI, Dependabot, vulnerability alerts, and automated security fixes.
 - Direct push protection on `main` is not currently enforceable on this private repo because GitHub branch protection is unavailable on the current plan.
+- Repo merge policy is now squash-only, and GitHub Projects are disabled to reduce public clutter.
+- Secret scanning is not currently available on this private repo; re-check availability after switching the repository to public.
 
 ## Common Commands
 

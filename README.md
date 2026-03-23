@@ -137,3 +137,8 @@ GitHub automation for this repository includes:
 - CI on pushes and pull requests
 - weekly Dependabot checks for Swift dependencies and GitHub Actions
 - security policy documentation in [SECURITY.md](SECURITY.md)
+
+Contributions and public issue reports are guided by:
+
+- [CONTRIBUTING.md](CONTRIBUTING.md)
+- [CONTRIBUTORS.md](CONTRIBUTORS.md)
