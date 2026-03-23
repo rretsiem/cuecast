@@ -92,6 +92,46 @@ enum SecurityPolicy {
 
         return fileURL.standardizedFileURL
     }
+
+    static func fetchLimitedData(
+        for request: URLRequest,
+        session: URLSession,
+        kind: String,
+        limitBytes: Int
+    ) async throws -> (Data, URLResponse) {
+        let targetURL = request.url ?? URL(fileURLWithPath: "/")
+        let (bytes, response) = try await session.bytes(for: request)
+
+        if response.expectedContentLength > Int64(limitBytes) {
+            throw InputSecurityError.oversizedResponse(
+                kind: kind,
+                url: targetURL.absoluteString,
+                limitBytes: limitBytes
+            )
+        }
+
+        var data = Data()
+        let initialCapacity: Int
+        if response.expectedContentLength > 0 {
+            initialCapacity = min(Int(response.expectedContentLength), limitBytes)
+        } else {
+            initialCapacity = min(64 * 1024, limitBytes)
+        }
+        data.reserveCapacity(initialCapacity)
+
+        for try await byte in bytes {
+            if data.count >= limitBytes {
+                throw InputSecurityError.oversizedResponse(
+                    kind: kind,
+                    url: targetURL.absoluteString,
+                    limitBytes: limitBytes
+                )
+            }
+            data.append(byte)
+        }
+
+        return (data, response)
+    }
 }
 
 enum InputSanitizer {

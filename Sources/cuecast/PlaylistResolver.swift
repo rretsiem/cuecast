@@ -16,7 +16,12 @@ enum PlaylistResolver {
 
             var request = URLRequest(url: current)
             request.setValue("cuecast/0.1", forHTTPHeaderField: "User-Agent")
-            let (data, response) = try await session.data(for: request)
+            let (data, response) = try await SecurityPolicy.fetchLimitedData(
+                for: request,
+                session: session,
+                kind: "playlist",
+                limitBytes: SecurityPolicy.maxPlaylistBytes
+            )
 
             guard let httpResponse = response as? HTTPURLResponse else {
                 throw StreamRecorderError.invalidResponse
@@ -24,13 +29,6 @@ enum PlaylistResolver {
             guard (200..<300).contains(httpResponse.statusCode) else {
                 throw StreamRecorderError.httpStatus(httpResponse.statusCode)
             }
-
-            try SecurityPolicy.validateResponseSize(
-                kind: "playlist",
-                data: data,
-                url: current,
-                limitBytes: SecurityPolicy.maxPlaylistBytes
-            )
 
             let body = String(data: data, encoding: .utf8)
                 ?? String(data: data, encoding: .isoLatin1)
