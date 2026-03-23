@@ -14,9 +14,9 @@ struct StreamDescriptor {
 
 enum ContentType {
     static func descriptor(from response: HTTPURLResponse, sourceURL: URL) -> StreamDescriptor {
-        let stationName = response.value(forHTTPHeaderField: "icy-name")?.nilIfEmpty
-        let genre = response.value(forHTTPHeaderField: "icy-genre")?.nilIfEmpty
-        let websiteURL = response.value(forHTTPHeaderField: "icy-url")?.nilIfEmpty
+        let stationName = response.value(forHTTPHeaderField: "icy-name")?.nilIfEmpty(maxLength: 160)
+        let genre = response.value(forHTTPHeaderField: "icy-genre")?.nilIfEmpty(maxLength: 120)
+        let websiteURL = response.value(forHTTPHeaderField: "icy-url")?.nilIfEmpty(maxLength: 300)
         let metaInterval = response.value(forHTTPHeaderField: "icy-metaint").flatMap(Int.init)
         let contentType = response.value(forHTTPHeaderField: "Content-Type")
         let bitrateKbps = response.value(forHTTPHeaderField: "icy-br").flatMap(Int.init)
@@ -90,8 +90,8 @@ enum ContentType {
 }
 
 private extension String {
-    var nilIfEmpty: String? {
-        let trimmed = trimmingCharacters(in: .whitespacesAndNewlines)
+    func nilIfEmpty(maxLength: Int) -> String? {
+        let trimmed = InputSanitizer.text(self, maxLength: maxLength)
         return trimmed.isEmpty ? nil : trimmed
     }
 }

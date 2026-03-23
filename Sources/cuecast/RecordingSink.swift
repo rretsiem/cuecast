@@ -49,7 +49,7 @@ final class RecordingSink {
         onFileChange: ((RecordingFileSnapshot) throws -> Void)? = nil,
         onFileFinalized: RecordingFinalizer? = nil
     ) throws {
-        self.recordsDirectory = recordsDirectory
+        self.recordsDirectory = recordsDirectory.standardizedFileURL
         self.stationSlug = Slugifier.slugify(stationName ?? sourceURL.host ?? "Stream")
         self.fileExtension = fileExtension
         self.logger = logger
@@ -57,7 +57,7 @@ final class RecordingSink {
         self.onFileFinalized = onFileFinalized
 
         try FileManager.default.createDirectory(
-            at: recordsDirectory,
+            at: self.recordsDirectory,
             withIntermediateDirectories: true
         )
     }
@@ -135,7 +135,10 @@ final class RecordingSink {
             titleSlug: titleSlug,
             fileExtension: fileExtension
         )
-        let destination = Self.marking(cleanURL, suffix: "recording")
+        let destination = try SecurityPolicy.validatedOutputURL(
+            Self.marking(cleanURL, suffix: "recording"),
+            within: recordsDirectory
+        )
 
         try FileManager.default.moveItem(at: currentFile.url, to: destination)
 
@@ -165,7 +168,11 @@ final class RecordingSink {
             titleSlug: titleSlug,
             fileExtension: fileExtension
         )
-        let fileURL = Self.marking(cleanURL, suffix: "recording")
+        let safeCleanURL = try SecurityPolicy.validatedOutputURL(cleanURL, within: recordsDirectory)
+        let fileURL = try SecurityPolicy.validatedOutputURL(
+            Self.marking(safeCleanURL, suffix: "recording"),
+            within: recordsDirectory
+        )
 
         FileManager.default.createFile(atPath: fileURL.path, contents: nil)
         let handle = try FileHandle(forWritingTo: fileURL)
@@ -200,9 +207,12 @@ final class RecordingSink {
         let finalURL: URL
         switch completion {
         case .metadataBoundary:
-            finalURL = currentFile.cleanURL
+            finalURL = try SecurityPolicy.validatedOutputURL(currentFile.cleanURL, within: recordsDirectory)
         case .interrupted:
-            finalURL = Self.marking(currentFile.cleanURL, suffix: "partial")
+            finalURL = try SecurityPolicy.validatedOutputURL(
+                Self.marking(currentFile.cleanURL, suffix: "partial"),
+                within: recordsDirectory
+            )
         }
 
         if currentFile.url != finalURL {

@@ -34,6 +34,7 @@ Implemented:
 - Session manifest written as `.jsonl`, one entry per segment
 - Graceful shutdown on `SIGINT` / `SIGTERM`
 - Disk-space safety checks with early-stop reserve
+- Input hardening for remote URLs, metadata, artwork, and output path safety
 
 Important behavior:
 
@@ -51,6 +52,10 @@ Important behavior:
 - Do not commit personal station names, direct stream URLs, service-specific station IDs, or local absolute paths.
 - The dashboard progress scale is visual only. It does not trigger segment splits.
 - Segment splits happen only when metadata title changes.
+- Remote stream and playlist URLs are now restricted to `http` and `https`.
+- Playlist and artwork fetches are size-limited to reduce risk from oversized responses.
+- Stream metadata and selected ICY headers are sanitized before being shown in the terminal or reused in filenames.
+- Output files are validated to stay inside the configured records directory.
 
 ## Key Files
 
@@ -85,6 +90,7 @@ Core runtime:
 - `Sources/cuecast/ArtworkResolver.swift`: best-effort artwork lookup for supported sources
 - `Sources/cuecast/Retagger.swift`: rebuild tags later from manifests or recorded files
 - `Sources/cuecast/Logger.swift`: logging abstraction
+- `Sources/cuecast/SecurityPolicy.swift`: centralized input/output safety limits and validators
 
 ## Privacy
 
@@ -122,9 +128,9 @@ Manifest entries currently include:
 - The dashboard uses ANSI styling and is intended for 256-color / truecolor terminals like Ghostty.
 - The terminal UI hides the cursor while active and restores it on clean shutdown.
 - GitHub repo automation now includes CI, Dependabot, vulnerability alerts, and automated security fixes.
-- Direct push protection on `main` is not currently enforceable on this private repo because GitHub branch protection is unavailable on the current plan.
+- `main` is now branch-protected on GitHub and requires a PR plus the `build` check.
 - Repo merge policy is now squash-only, and GitHub Projects are disabled to reduce public clutter.
-- Secret scanning is not currently available on this private repo; re-check availability after switching the repository to public.
+- Secret scanning and push protection are enabled now that the repository is public.
 
 ## Common Commands
 

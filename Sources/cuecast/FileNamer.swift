@@ -73,7 +73,10 @@ enum FileNamer {
         }
 
         let slug = Slugifier.slugify(value)
-        return slug.isEmpty ? fallback : slug
+        guard !slug.isEmpty else {
+            return fallback
+        }
+        return String(slug.prefix(SecurityPolicy.maxSlugLength))
     }
 
     private static let dayFormatter: DateFormatter = {

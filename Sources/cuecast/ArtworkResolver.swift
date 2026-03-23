@@ -13,19 +13,42 @@ enum ArtworkResolver {
 
         do {
             let describeURL = URL(string: "https://opml.radiotime.com/Describe.ashx?id=\(stationID)")!
-            let (describeData, _) = try await session.data(from: describeURL)
+            let describeRequest = URLRequest(url: describeURL)
+            let (describeData, describeResponse) = try await SecurityPolicy.fetchLimitedData(
+                for: describeRequest,
+                session: session,
+                kind: "artwork description",
+                limitBytes: SecurityPolicy.maxArtworkDescriptionBytes
+            )
             guard
-                let xml = String(data: describeData, encoding: .utf8),
-                let logoURLString = firstCapture(in: xml, pattern: #"<logo>([^<]+)</logo>"#),
-                let logoURL = URL(string: logoURLString)
+                let describeHTTPResponse = describeResponse as? HTTPURLResponse,
+                (200..<300).contains(describeHTTPResponse.statusCode)
             else {
                 return nil
             }
-
-            let (imageData, imageResponse) = try await session.data(from: logoURL)
-            guard !imageData.isEmpty else {
+            guard
+                let xml = String(data: describeData, encoding: .utf8),
+                let logoURLString = firstCapture(in: xml, pattern: #"<logo>([^<]+)</logo>"#),
+                let candidateURL = URL(string: logoURLString)
+            else {
                 return nil
             }
+            let logoURL = try SecurityPolicy.validatedRemoteURL(candidateURL)
+
+            let imageRequest = URLRequest(url: logoURL)
+            let (imageData, imageResponse) = try await SecurityPolicy.fetchLimitedData(
+                for: imageRequest,
+                session: session,
+                kind: "artwork",
+                limitBytes: SecurityPolicy.maxArtworkBytes
+            )
+            guard
+                let imageHTTPResponse = imageResponse as? HTTPURLResponse,
+                (200..<300).contains(imageHTTPResponse.statusCode)
+            else {
+                return nil
+            }
+            try SecurityPolicy.validateArtwork(data: imageData, response: imageResponse, url: logoURL)
 
             let mimeType = (imageResponse as? HTTPURLResponse)?
                 .value(forHTTPHeaderField: "Content-Type")?
