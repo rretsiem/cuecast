@@ -2,6 +2,12 @@
 
 Cuecast is a native macOS command line recorder for internet radio and long-form DJ streams. It saves the incoming audio exactly as received, splits files on metadata title changes, and keeps each finished segment usable in normal music players.
 
+## Screenshot
+
+![Cuecast dashboard in Ghostty](assets/screenshots/cuecast-dashboard.png)
+
+Private stream details are redacted in the demo capture above.
+
 ## What It Does
 
 - Records HTTP radio streams without transcoding.
@@ -67,7 +73,7 @@ You will typically see:
 Filename states:
 
 - `..._recording.mp3` for the active in-progress segment
-- `... .mp3` for a segment that ended cleanly on a metadata boundary
+- `...Track.mp3` for a segment that ended cleanly on a metadata boundary
 - `..._partial.mp3` for the last segment when recording stops mid-title
 
 The JSONL session manifest stores one JSON object per segment, including:
