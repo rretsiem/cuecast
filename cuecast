@@ -1,0 +1,21 @@
+#!/bin/zsh
+
+set -euo pipefail
+
+ROOT_DIR=${0:A:h}
+BINARY_PATH="$ROOT_DIR/.build/release/cuecast"
+
+needs_build=0
+
+if [[ ! -x "$BINARY_PATH" ]]; then
+  needs_build=1
+elif find "$ROOT_DIR/Sources" "$ROOT_DIR/Package.swift" -newer "$BINARY_PATH" -print -quit | grep -q .; then
+  needs_build=1
+fi
+
+if [[ $needs_build -eq 1 ]]; then
+  echo "[cuecast] building release binary..." >&2
+  swift build -c release --package-path "$ROOT_DIR"
+fi
+
+exec "$BINARY_PATH" "$@"
