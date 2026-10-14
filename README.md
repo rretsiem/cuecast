@@ -27,7 +27,7 @@ Most radio recorders focus on timers or full-stream dumps. Cuecast is built for 
 ## Requirements
 
 - macOS 13 or newer
-- Swift 6 toolchain
+- Swift 6.1 or newer toolchain
 
 ## Build
 
@@ -118,6 +118,9 @@ You can also backfill tags later:
 - Warns before the disk is close to full.
 - Stops early instead of writing until the volume is exhausted.
 - Gracefully finalizes files and restores terminal state on normal shutdown.
+- Accepts only `http` and `https` stream and playlist URLs, including URLs resolved from playlists.
+- Sanitizes ICY metadata and header values before they reach the terminal, logs, filenames or tags.
+- Caps untrusted payloads: playlists at 512 KiB, artwork at 5 MiB, and metadata at 32 fields of up to 512 characters.
 
 ## Notes
 
